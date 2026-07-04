@@ -1,7 +1,7 @@
-# Domain-Specific Small Language Model (SLM)
+# IvLLM: A Mathematical Reasoning Language Model
 
 ## Aim
-To engineer a **Domain-Specific Small Language Model** from scratch, progressing from foundational sequence models to a ~1.5B parameter, **OLMo-style** sparse Mixture-of-Experts (MoE) architecture.
+To engineer a **Mathematical Reasoning Language Model** from scratch, progressing from foundational sequence models to a ~671M parameter, **OLMo-style** architecture.
 
 ---
 
@@ -11,7 +11,6 @@ This project tracks the development of a custom language model from scratch. Rat
 The project timeline begins with basic attention-based encoder–decoder implementations and benchmarking (RNN/LSTM) and later moves onto a custom **decoder-only Transformer** heavily inspired by OLMo and LLaMA. 
 
 Key architectural choices include:
-- **Sparse MoE:** 8 experts with top-2 routing in the FFNN to increase model capacity without having a very high count of active parameters per token.
 - **Attention:** Grouped Query Attention (GQA) to reduce KV-cache memory overload applied along with Rotary Position Encodings (RoPE).
 - **Efficiency:** Bias-free SwiGLU activations, RMSNorm, and BF16 precision training.
 
@@ -25,7 +24,7 @@ Following base pre-training on a custom BPE tokenizer, the model will undergo Su
 - Implemented Next Word Predictor from scratch using basic RNN and LSTM blocks.
 - Implemented attention-based encoder–decoder architecture for sequence tasks.
 - Engineered foundational Transformer components (multi-head self-attention, masked causal attention).
-- Designed the $\sim$1.5B parameter OLMo-style MoE architecture and custom BPE tokenizer.
+- Designed the $\sim$1.5B parameter OLMo-style architecture and legacy GPT-2 tokeniser.
 
 ### In Progress
 - Executing base pre-training pipeline in BF16 precision.
@@ -63,8 +62,7 @@ Before tackling language models, the following were implemented to solidify fund
 ### Phase 4: OLMo-Style MoE Architecture (IvLLM)
 - [x] Decoder-only architecture  
 - [x] Custom BPE Tokenizer integration
-- [x] Grouped Query Attention (GQA) & RoPE
-- [x] Sparse MoE FFNN (Top-2 routing, SwiGLU) 
+- [x] Grouped Query Attention (GQA), RoPE and SwiGLU
 - [ ] BF16 Pre-training  
 
 ### Phase 5: Optimization & Fine-Tuning
@@ -87,7 +85,7 @@ Before tackling language models, the following were implemented to solidify fund
 1. RNN → LSTM → Attention  
 2. Encoder–Decoder Architectures  
 3. Standard Transformer Architecture  
-4. **OLMo-style Decoder-only Transformer (MoE, GQA, RoPE)**  
+4. **OLMo-style Decoder-only Transformer (GQA, RoPE)**  
 5. Base Pre-training & BPE Tokenization
 6. SFT & Parameter-Efficient Fine-Tuning (QLoRA)  
 7. Preference Alignment via Deep Reinforcement Learning (DPO/GRPO) 
