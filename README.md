@@ -40,6 +40,17 @@ The core architecture is implemented completely from scratch using highly optimi
     *   Python Code & OpenThoughts (Filtered to < 1800 token spans): 7%
 *   **Hyperparameters:** Configured with an expanded context limit of 2048 sequences and a conservative base learning rate ($2 \times 10^{-5}$) to ensure architectural stability during fine-tuning.
 
+## Hardware & Compute
+The model was trained on a distributed compute cluster utilizing **3x NVIDIA RTX 6000 Ada Generation GPUs**. To maximize hardware throughput, the training pipeline heavily leverages Distributed Data Parallel (DDP) and BF16 mixed precision, scaling the global batch size efficiently across the multi-GPU setup.
+
+## Current Training Results
+*Note: The model is currently a foundational base model. It excels at continuing mathematical texts and proofs but has not yet been instruction-tuned for Q&A.*
+
+**Phase 3 (Continuation Pre-Training) Metrics:**
+*   **Final Training Loss:** ~1.99
+*   **Final Evaluation Loss:** 1.82
+*   **Gradient Norm Stabilization:** Maintained at ~0.38
+
 ---
 
 ## Tracking & Visualization
