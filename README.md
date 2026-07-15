@@ -71,6 +71,8 @@ Clone the repository and install the required dependencies:
 git clone [https://github.com/MayankSinghx01/domain-specific-slm.git](https://github.com/MayankSinghx01/domain-specific-slm.git)
 cd domain-specific-slm
 pip install -r requirements.txt
+# Adjust nproc_per_node based on your hardware (e.g., 3 for 3x RTX 6000 Ada)
+torchrun --standalone --nproc_per_node=3 src/training/train_phase2.py
 ```
 
 ## Project Repository Map
