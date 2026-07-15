@@ -56,6 +56,7 @@ All training runs are actively instrumented using Weights & Biases for validatio
 ## Project Repository Map
 Refer to the codebase directory configuration below to navigate the implementation steps across the data extraction engines, core model blocks, and execution scripts.
 
+```text
 IvLLM/
 ├── README.md
 ├── requirements.txt
