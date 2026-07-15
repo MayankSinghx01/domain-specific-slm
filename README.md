@@ -64,6 +64,15 @@ All training runs are actively instrumented using Weights & Biases for validatio
     *   Hardware throughput parameters (`system/dt`, tokens per second processing speeds).
     *   Autoregressive validation tracking text streams (`benchmark_sample`).
 
+## Installation & Quick Start
+
+Clone the repository and install the required dependencies:
+```bash
+git clone [https://github.com/MayankSinghx01/domain-specific-slm.git](https://github.com/MayankSinghx01/domain-specific-slm.git)
+cd domain-specific-slm
+pip install -r requirements.txt
+```
+
 ## Project Repository Map
 Refer to the codebase directory configuration below to navigate the implementation steps across the data extraction engines, core model blocks, and execution scripts.
 
