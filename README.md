@@ -46,7 +46,7 @@ The core architecture is implemented completely from scratch using highly optimi
 
 All training runs are actively instrumented using Weights & Biases for validation telemetry. 
 
-*   **Project Workspace:** [View IvLLM WandB Project Dashboard]([YOUR_WANDB_PROJECT_URL_HERE](https://wandb.ai/mayanksingh-x01-visvesvaraya-national-institute-of-techn/ivllm-phase3))
+*   **Project Workspace:** [View IvLLM WandB Project Dashboard](https://wandb.ai/mayanksingh-x01-visvesvaraya-national-institute-of-techn/ivllm-phase3)
 *   **Core Tracked Metrics:**
     *   `train/loss` & `val/loss` convergence profiles.
     *   Granular per-dataset cross-entropy validation tracking (`val/openwebmath_loss`, etc.).
