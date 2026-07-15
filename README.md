@@ -1,137 +1,72 @@
 # IvLLM: A Mathematical Reasoning Language Model
 
-## Aim
-To engineer a **Mathematical Reasoning Language Model** from scratch, progressing from foundational sequence models to a ~671M parameter, **OLMo-style** architecture.
+## Overview
+IvLLM is a **Mathematical Reasoning Language Model** made from scratch, progressing from foundational sequence models to a ~671M parameter, **OLMo-style** architecture. This project tracks the development of a custom language model from scratch. Rather than just calling APIs, the focus is on building and understanding sequential modeling and modern LLM architecture.
+
+## Model Architecture Specifications
+The core architecture is implemented completely from scratch using highly optimized PyTorch primitives:
+*   **Parameter Scale:** ~671M parameters (24 layers, hidden dimension of 1536).
+*   **Attention Mechanism:** Grouped Query Attention (GQA) with 24 Query heads and 6 Key-Value groups (4 queries per group) to optimize memory utilization during KV-cache generation.
+*   **Positional Embedding:** Rotary Position Encodings (RoPE) applied at each attention block.
+*   **Activation & Normalization:** Bias-free SwiGLU blocks combined with Root Mean Square Normalization (RMSNorm).
+*   **Weight Tying:** Shared token embedding and final output projection matrix layers.
 
 ---
 
-## Project Overview
-This project tracks the development of a custom language model from scratch. Rather than just calling APIs, the focus is on building and understanding sequential modeling and modern LLM architecture.
+## Three-Phase Training Pipeline
 
-The project timeline begins with basic attention-based encoder–decoder implementations and benchmarking (RNN/LSTM) and later moves onto a custom **decoder-only Transformer** heavily inspired by OLMo and LLaMA. 
+### Phase 1: Base Pre-training Engine
+*   **Objective:** Develop core linguistic understanding and contextual understanding of the language.
+*   **Dataset:** Scaled streaming of 18B FineWeb-Edu tokens (`sample-10BT`) split into 100M token chunk shards (`uint16`).
+*   **Precision:** Distributed Data Parallel (DDP) utilizing BF16 mixed-precision, resulting in 50% memory footprint reduction.
+*   **Context Window:** 2048 sequence tokens using legacy GPT-2 tokenizer.
 
-Key architectural choices include:
-- **Attention:** Grouped Query Attention (GQA) to reduce KV-cache memory overload applied along with Rotary Position Encodings (RoPE).
-- **Efficiency:** Bias-free SwiGLU activations, RMSNorm, and BF16 precision training.
+### Phase 2: Mathematical Reasoning & Adaptation
+*   **Objective:** Align model capabilities towards formal mathematical expressions, proofs, and syntax structures.
+*   **Data Mix Strategy:** Linear sampling from an optimized multi-domain corpus:
+    *   Reasoning Instruction Corpus: 35%
+    *   Verifiable Math Problems (Prime Intellect) & LaTeX Sets: 30%
+    *   Cosmopedia & Technical Replays: 25%
+    *   Python Source Code: 10%
+*   **Training Setup:** Cosine decay scheduling initialized directly from Phase 1 checkpoints.
 
-Following base pre-training on a custom BPE tokenizer, the model will undergo Supervised Fine-Tuning (SFT) using parameter-efficient methods like **QLoRA**. The final stages target preference alignment (DPO/GRPO) and INT4/8 quantization for hardware-constrained deployment on a Raspberry Pi 5.
-
----
-
-## Current Progress
-
-### Completed
-- Implemented Next Word Predictor from scratch using basic RNN and LSTM blocks.
-- Implemented attention-based encoder–decoder architecture for sequence tasks.
-- Engineered foundational Transformer components (multi-head self-attention, masked causal attention).
-- Designed the $\sim$1.5B parameter OLMo-style architecture and legacy GPT-2 tokeniser.
-
-### In Progress
-- Executing base pre-training pipeline in BF16 precision.
-- Setting up infrastructure for Supervised Fine-Tuning (SFT) using QLoRA.
-
----
-
-## Foundational Work (Brief)
-Before tackling language models, the following were implemented to solidify fundamentals in backpropagation, optimization, feature extraction, and sequence-to-sequence architectures:
-- ANN from scratch using NumPy (MNIST classification)
-- ANN using PyTorch
-- CNN using PyTorch (Fashion MNIST)
-- RNNs using Pytorch (Next word predictor)
-- LSTMs and Attention-Based Encoder-Decoder using PyTorch (Next word predictor)
+### Phase 3: Extended Continuation Pre-training (CPT)
+*   **Objective:** Solidify multi-step chain-of-thought mathematical solutions while expanding token scale limits.
+*   **Data Mix Strategy:** Upgraded data distribution targeted at a 4B token extended horizon.
+    *   OpenWebMath: 38%
+    *   FineWeb-Edu Replay: 20%
+    *   NuminaMath-CoT: 15%
+    *   Cosmopedia Auto-Math & Prime Intellect: 20%
+    *   Python Code & OpenThoughts (Filtered to < 1800 token spans): 7%
+*   **Hyperparameters:** Configured with an expanded context limit of 2048 sequences and a conservative base learning rate ($2 \times 10^{-5}$) to ensure architectural stability during fine-tuning.
 
 ---
 
-## Project Progress Tracker
+## Tracking & Visualization
 
-### Phase 1: Sequence Models
-- [x] RNN implementation  
-- [x] LSTM implementation  
-- [x] Next-word prediction baseline  
+All training runs are actively instrumented using Weights & Biases for validation telemetry. 
 
-### Phase 2: Attention
-- [x] Attention mechanism  
-- [x] Encoder–Decoder architecture  
+*   **Project Workspace:** [View IvLLM WandB Project Dashboard]([YOUR_WANDB_PROJECT_URL_HERE](https://wandb.ai/mayanksingh-x01-visvesvaraya-national-institute-of-techn/ivllm-phase3))
+*   **Core Tracked Metrics:**
+    *   `train/loss` & `val/loss` convergence profiles.
+    *   Granular per-dataset cross-entropy validation tracking (`val/openwebmath_loss`, etc.).
+    *   Hardware throughput parameters (`system/dt`, tokens per second processing speeds).
+    *   Autoregressive validation tracking text streams (`benchmark_sample`).
 
-### Phase 3: Base Transformers
-- [x] Self-attention (scaled dot-product)  
-- [x] Multi-head attention  
-- [x] Positional encoding  
-- [x] Standard Transformer block  
+## Project Repository Map
+Refer to the codebase directory configuration below to navigate the implementation steps across the data extraction engines, core model blocks, and execution scripts.
 
-### Phase 4: OLMo-Style MoE Architecture (IvLLM)
-- [x] Decoder-only architecture  
-- [x] Custom BPE Tokenizer integration
-- [x] Grouped Query Attention (GQA), RoPE and SwiGLU
-- [ ] BF16 Pre-training  
-
-### Phase 5: Optimization & Fine-Tuning
-- [ ] Supervised Fine-Tuning (SFT)
-- [ ] Parameter-Efficient Fine-Tuning (QLoRA)  
-- [ ] INT4/8 Quantization
-
-### Phase 6: Preference Alignment
-- [ ] Proximal Policy Optimization (PPO) - *Baseline*
-- [ ] Direct Preference Optimization (DPO)
-- [ ] Group Relative Policy Optimization (GRPO)
-
-### Phase 7: Deployment
-- [ ] Edge deployment & inference optimization (Raspberry Pi 5)  
-
----
-
-## Learning Roadmap
-
-1. RNN → LSTM → Attention  
-2. Encoder–Decoder Architectures  
-3. Standard Transformer Architecture  
-4. **OLMo-style Decoder-only Transformer (GQA, RoPE)**  
-5. Base Pre-training & BPE Tokenization
-6. SFT & Parameter-Efficient Fine-Tuning (QLoRA)  
-7. Preference Alignment via Deep Reinforcement Learning (DPO/GRPO) 
-8. Model Quantization & Edge Deployment
-
----
-
-## Experiments 
-
-| Model | Status | Notes |
-|------|--------|------|
-| **RNN** | Completed | Baseline sequence model; severe vanishing gradient issues. |
-| **LSTM** | Completed | Handled long-term dependencies significantly better than RNN. |
-| **Attention LSTM** | Completed | Improved contextual learning and sequence translation. |
-| **Vanilla Transformer** | Completed | Generated dynamic contextual embeddings; achieved GPU parallelization. |
-| **Domain-Specific SLM** | In Progress | Final objective. Sparse MoE, RoPE, GQA. Currently in base pre-training phase. |
-
----
-
-## Tech Stack
-- **Languages and Frameworks:** Python, PyTorch, NumPy
-- **Tokenization:** Hugging Face Tokenizers (Custom BPE)
-- **Training Optimization:** BF16 Mixed Precision, AdamW
-- **Supervised Fine-Tuning:** PEFT (QLoRA), Model Quantization (INT4/8)
-- **Alignment/RL:** DPO, GRPO, PPO
-
----
-
-## References
-
-1. Sutskever, I., Vinyals, O., and Le, Q. V.  
-   *Sequence to Sequence Learning with Neural Networks* (2014)  
-   [arXiv:1409.3215](https://arxiv.org/abs/1409.3215)  
-
-2. Bahdanau, D., Cho, K., and Bengio, Y.  
-   *Neural Machine Translation by Jointly Learning to Align and Translate* (2014)  
-   [arXiv:1409.0473](https://arxiv.org/abs/1409.0473)  
-
-3. Vaswani, A., et al.  
-   *Attention Is All You Need* (2017)  
-   [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
-   
-4. Groeneveld, D. et al.  
-   *OLMo: Accelerating the Science of Language Models* (2024)  
-   [arXiv:2402.00838](https://arxiv.org/abs/2402.00838)
-
-5. Jiang, A. Q. et al.  
-   *Mixtral of Experts* (2024)  
-   [arXiv:2401.04088](https://arxiv.org/abs/2401.04088)
+IvLLM/
+├── README.md
+├── requirements.txt
+└── src/
+    ├── data/
+    │   ├── extract_fineweb.py       # Phase 1 FineWeb token extraction engine
+    │   ├── preprocess_math.py       # Phase 2 Mathematical data sharding script
+    │   └── preprocess_phase3.py     # Phase 3 Advanced data mix streaming script
+    ├── model/
+    │   ├── __init__.py
+    │   └── ivllm.py                 # Full 671M structural model definition & Phase 1 trainer
+    └── training/
+        ├── train_phase2.py          # Phase 2 Domain Adaptation execution routine
+        └── train_phase3.py          # Phase 3 Extended CPT training loop
