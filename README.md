@@ -3,6 +3,8 @@
 ## Overview
 IvLLM is a **Mathematical Reasoning Language Model** made from scratch, progressing from foundational sequence models to a ~671M parameter, **OLMo-style** architecture. This project tracks the development of a custom language model from scratch. Rather than just calling APIs, the focus is on building and understanding sequential modeling and modern LLM architecture.
 
+Context: This project was developed during my tenure as a researcher at IvLabs, the premier AI & Robotics research lab at VNIT Nagpur. IvLabs is a highly selective research group with alumni currently driving research at Google DeepMind, NASA, and top global institutions.
+
 ## Model Architecture Specifications
 The core architecture is implemented completely from scratch using highly optimized PyTorch primitives:
 *   **Parameter Scale:** ~671M parameters (24 layers, hidden dimension of 1536).
@@ -64,15 +66,68 @@ All training runs are actively instrumented using Weights & Biases for validatio
     *   Hardware throughput parameters (`system/dt`, tokens per second processing speeds).
     *   Autoregressive validation tracking text streams (`benchmark_sample`).
 
-## Installation & Quick Start
+### Training Metrics (Phase 3 CPT)
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/e67033bf-0786-4d6b-bf05-6206005137ab" alt="Training Loss Curve (with checkpoint recovery)" width="48%">
+  &nbsp; &nbsp;
+  <img src="https://github.com/user-attachments/assets/041856d4-c410-4aa4-92b2-7263e179371f" alt="OpenThoughts Validation Loss" width="48%">
+</p>
+
+*Note: The left graph demonstrates overall training convergence. Due to a cluster hardware fault at step 1k, the initial run (blue) was interrupted, but training was successfully recovered from the optimizer state (red). The right graph demonstrates successful domain adaptation, showing continuous and stable learning on the complex OpenThoughts reasoning dataset.*
+
+
+## Installation
 
 Clone the repository and install the required dependencies:
 ```bash
-git clone [https://github.com/MayankSinghx01/domain-specific-slm.git](https://github.com/MayankSinghx01/domain-specific-slm.git)
+git clone [https://github.com/MayankSinghx01/IvLLM-671M.git](https://github.com/MayankSinghx01/domain-specific-slm.git)
 cd domain-specific-slm
 pip install -r requirements.txt
 # Adjust nproc_per_node based on your hardware (e.g., 3 for 3x RTX 6000 Ada)
 torchrun --standalone --nproc_per_node=3 src/training/train_phase2.py
+```
+
+## Quick Start
+
+```python
+import torch
+from transformers import GPT2Tokenizer
+from src.model.ivllm import IvLLM
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+# 1. Load the legacy GPT-2 Tokenizer
+tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+
+# 2. Initialize the 671M Architecture
+model = IvLLM(
+    vocab_size=tokenizer.vocab_size,
+    hidden_dim=1536,
+    n_layers=24,
+    n_heads=24,
+    n_kv_groups=6 # GQA configuration
+)
+
+# 3. Load Phase 3 Checkpoint Weights
+checkpoint = torch.load("checkpoints/phase3_final.pt", map_location=device)
+model.load_state_dict(checkpoint['model_state_dict'])
+model.to(device)
+model.eval()
+
+# 4. Generate Mathematical Output
+prompt = """Question: What is the derivative of x^2-3x+5?\nAnswer:"""
+input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)
+
+with torch.no_grad():
+    output_ids = model.generate(
+        input_ids,
+        max_new_tokens=200,
+        temperature=0.7,
+        top_k=50
+    )
+
+print(tokenizer.decode(output_ids[0], skip_special_tokens=True))
 ```
 
 ## Project Repository Map
